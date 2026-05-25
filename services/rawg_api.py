@@ -11,7 +11,7 @@ class RAWGClient:
     def __init__(self, api_key: str):
         self.api_key = api_key
         self.base_url = "https://api.rawg.io/api"
-        self._client = httpx.AsyncClient(timeout=15.0)
+        self._client = httpx.AsyncClient(timeout=5.0)
         self._search_cache = TTLCache(maxsize=200, ttl=3600)
 
     async def _request(self, endpoint: str, params: dict | None = None) -> dict:
