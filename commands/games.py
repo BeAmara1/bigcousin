@@ -27,7 +27,12 @@ class GamesCog(commands.Cog):
         await interaction.response.defer()
 
         game_id = int(nome)
-        game_data = await rawg_client.get_game_details_parsed(game_id)
+
+        try:
+            game_data = await rawg_client.get_game_details_parsed(game_id)
+        except Exception:
+            await send_error(interaction, "Erro ao buscar detalhes do jogo na RAWG. Tente novamente.")
+            return
 
         if game_data is None:
             await send_error(interaction, "Jogo não encontrado. Tente novamente.")

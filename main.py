@@ -58,12 +58,15 @@ class BigCousin(commands.Bot):
             )
         )
 
-    async def on_command_error(self, interaction: discord.Interaction, error):
-        from utils.errors import global_error_handler
-        await global_error_handler(interaction, error)
-
 
 bot = BigCousin()
+
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    from utils.errors import global_error_handler
+    await global_error_handler(interaction, error)
+
 
 if __name__ == "__main__":
     try:
