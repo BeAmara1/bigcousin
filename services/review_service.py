@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Game, Review
+from database.models import Game, Review, UserGame
 from utils.errors import GameNotFoundError, NotInLibraryError
 
 logger = logging.getLogger("bigcousin.review_service")
@@ -21,9 +21,8 @@ async def set_review(session: AsyncSession, discord_id: int, game_id: int, text:
     review = existing.scalar_one_or_none()
 
     if review is None:
-        from database.models import Rating
         has_game = await session.execute(
-            select(Rating).where(Rating.user_id == discord_id, Rating.game_id == game_id)
+            select(UserGame).where(UserGame.user_id == discord_id, UserGame.game_id == game_id)
         )
         if not has_game.scalar_one_or_none():
             raise NotInLibraryError("Adicione o jogo à sua biblioteca primeiro com /addgame")

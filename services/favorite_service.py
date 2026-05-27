@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Favorite, Game, Rating
+from database.models import Favorite, Game, Rating, UserGame
 from utils.errors import GameNotFoundError, NotInLibraryError
 
 logger = logging.getLogger("bigcousin.favorite_service")
@@ -16,7 +16,7 @@ async def toggle_favorite(session: AsyncSession, discord_id: int, game_id: int) 
         raise GameNotFoundError(f"Jogo {game_id} não encontrado no catálogo")
 
     has_game = await session.execute(
-        select(Rating).where(Rating.user_id == discord_id, Rating.game_id == game_id)
+        select(UserGame).where(UserGame.user_id == discord_id, UserGame.game_id == game_id)
     )
     if not has_game.scalar_one_or_none():
         raise NotInLibraryError("Adicione o jogo à sua biblioteca primeiro com /addgame")

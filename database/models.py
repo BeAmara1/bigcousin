@@ -20,6 +20,7 @@ class User(Base):
     reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan")
     backlogs = relationship("Backlog", back_populates="user", cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
+    user_games = relationship("UserGame", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.username} ({self.discord_id})>"
@@ -41,6 +42,7 @@ class Game(Base):
     reviews = relationship("Review", back_populates="game", cascade="all, delete-orphan")
     backlogs = relationship("Backlog", back_populates="game", cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="game", cascade="all, delete-orphan")
+    user_games = relationship("UserGame", back_populates="game", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Game {self.name}>"
@@ -118,3 +120,20 @@ class Favorite(Base):
 
     def __repr__(self):
         return f"<Favorite {self.user_id} -> {self.game_id}>"
+
+
+class UserGame(Base):
+    __tablename__ = "user_games"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey("users.discord_id"), nullable=False)
+    game_id = Column(Integer, ForeignKey("games.id"), nullable=False)
+    added_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="user_games")
+    game = relationship("Game", back_populates="user_games")
+
+    __table_args__ = (UniqueConstraint("user_id", "game_id", name="uq_user_game_library"),)
+
+    def __repr__(self):
+        return f"<UserGame {self.user_id} -> {self.game_id}>"

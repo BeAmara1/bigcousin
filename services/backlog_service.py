@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Backlog, Game, Rating
+from database.models import Backlog, Game, Rating, UserGame
 from utils.errors import (AlreadyInBacklogError, GameNotFoundError,
                            NotInBacklogError)
 
@@ -23,7 +23,7 @@ async def add_to_backlog(session: AsyncSession, discord_id: int, game_id: int) -
         raise AlreadyInBacklogError(f"{game.name} já está no backlog")
 
     has_game = await session.execute(
-        select(Rating).where(Rating.user_id == discord_id, Rating.game_id == game_id)
+        select(UserGame).where(UserGame.user_id == discord_id, UserGame.game_id == game_id)
     )
     if not has_game.scalar_one_or_none():
         raise GameNotFoundError("Adicione o jogo à sua biblioteca primeiro com /addgame")

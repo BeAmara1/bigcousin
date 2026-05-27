@@ -1,16 +1,14 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from sqlalchemy import select
-
 from database.connection import async_session
-from database.models import Game, Rating
-from services.game_service import get_or_create_game, get_user_games, search_and_add_game
+from services.game_service import (add_to_library, get_or_create_game,
+                                   get_user_games)
 from services.rawg_api import rawg_client
 from services.user_service import get_or_create_user
 from utils.autocomplete import search_rawg_games
 from utils.embeds import addgame_embed, game_list_embed
-from utils.errors import send_error, send_success
+from utils.errors import AlreadyInLibraryError, send_error, send_success
 from utils.paginator import PaginatorView
 
 ITEMS_PER_PAGE = 5
@@ -44,16 +42,11 @@ class GamesCog(commands.Cog):
             user = await get_or_create_user(session, interaction.user)
             game = await get_or_create_game(session, game_data)
 
-            existing = await session.execute(
-                select(Rating).where(Rating.user_id == user.discord_id, Rating.game_id == game.id)
-            )
-            if existing.scalar_one_or_none():
-                await send_error(interaction, f"**{game.name}** já está na sua biblioteca!")
+            try:
+                await add_to_library(session, user.discord_id, game.id)
+            except AlreadyInLibraryError as e:
+                await send_error(interaction, str(e))
                 return
-
-            rating = Rating(user_id=user.discord_id, game_id=game.id, score=0)
-            session.add(rating)
-            await session.commit()
 
             embed = addgame_embed(interaction.user, game)
 

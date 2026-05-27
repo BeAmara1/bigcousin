@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Favorite, Game, Rating, Review, User
+from database.models import Backlog, Favorite, Game, Rating, Review, User, UserGame
 from services.game_service import get_user_games
 from utils.errors import GameNotFoundError
 
@@ -40,29 +40,43 @@ async def get_user_stats(session: AsyncSession, discord_id: int) -> dict:
     if not user:
         return {}
 
-    total_games_query = select(func.count(Rating.game_id.distinct())).where(Rating.user_id == discord_id)
-    total_games_result = await session.execute(total_games_query)
-    total_games = total_games_result.scalar() or 0
+    user_games = await session.execute(
+        select(UserGame).where(UserGame.user_id == discord_id)
+    )
+    user_game_ids = [ug.game_id for ug in user_games.scalars().all()]
 
-    avg_rating_query = select(func.avg(Rating.score)).where(Rating.user_id == discord_id)
-    avg_rating_result = await session.execute(avg_rating_query)
-    avg_rating = avg_rating_result.scalar() or 0.0
+    ratings = {}
+    if user_game_ids:
+        ratings_result = await session.execute(
+            select(Rating).where(
+                Rating.user_id == discord_id,
+                Rating.game_id.in_(user_game_ids)
+            )
+        )
+        for r in ratings_result.scalars().all():
+            ratings[r.game_id] = r
 
-    from database.models import Backlog
-    backlog_count_query = select(func.count(Backlog.id)).where(Backlog.user_id == discord_id)
-    backlog_count_result = await session.execute(backlog_count_query)
-    backlog_count = backlog_count_result.scalar() or 0
+    total_games = len(game_ids_list)
+    beaten_count = len(ratings)
+    avg_rating = (
+        round(sum(r.score for r in ratings.values()) / len(ratings), 1)
+        if ratings else 0.0
+    )
+
+    backlog_count = (await session.execute(
+        select(func.count(Backlog.id)).where(Backlog.user_id == discord_id)
+    )).scalar() or 0
 
     recent_query = (
-        select(Rating)
-        .options(selectinload(Rating.game))
-        .where(Rating.user_id == discord_id)
-        .order_by(Rating.updated_at.desc())
+        select(UserGame)
+        .options(selectinload(UserGame.game))
+        .where(UserGame.user_id == discord_id)
+        .order_by(UserGame.added_at.desc())
         .limit(5)
     )
     recent_result = await session.execute(recent_query)
-    recent_ratings = recent_result.scalars().all()
-    recent_games = [(r.game, r) for r in recent_ratings]
+    recent_user_games = recent_result.scalars().all()
+    recent_games = [(ug.game, ratings.get(ug.game_id)) for ug in recent_user_games if ug.game]
 
     fav_query = (
         select(Favorite)
@@ -85,8 +99,8 @@ async def get_user_stats(session: AsyncSession, discord_id: int) -> dict:
 
     return {
         "total_games": total_games,
-        "avg_rating": round(avg_rating, 1) if avg_rating else 0.0,
-        "beaten_count": total_games,
+        "avg_rating": avg_rating,
+        "beaten_count": beaten_count,
         "backlog_count": backlog_count,
         "recent_games": recent_games,
         "favorites": favorites,

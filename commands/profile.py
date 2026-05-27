@@ -15,11 +15,13 @@ class ProfileCog(commands.Cog):
         name="profile",
         description="Mostra seu perfil de jogos com estatísticas, favoritos e backlog",
     )
-    async def profile(self, interaction: discord.Interaction):
+    async def profile(self, interaction: discord.Interaction, usuario: discord.Member = None):
         await interaction.response.defer()
 
+        target = usuario or interaction.user
+
         async with async_session() as session:
-            user = await get_or_create_user(session, interaction.user)
+            user = await get_or_create_user(session, target)
             stats = await get_user_stats(session, user.discord_id)
 
         embed = profile_embed({

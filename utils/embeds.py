@@ -35,10 +35,10 @@ def profile_embed(user_data):
 
     if stats['recent_games']:
         recent = "\n".join(
-            f"• **{game.name}** ⭐ {rating.score}"
+            f"• **{game.name}**" + (f" ⭐ {rating.score}" if rating else "")
             for game, rating in stats['recent_games']
         )
-        embed.add_field(name="🎮 Jogados Recentemente", value=recent, inline=False)
+        embed.add_field(name="🎮 Adicionados Recentemente", value=recent, inline=False)
 
     if stats['favorites']:
         favs = "\n".join(f"• **{f.game.name}**" for f in stats['favorites'])

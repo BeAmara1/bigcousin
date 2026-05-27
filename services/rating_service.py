@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Game, Rating
+from database.models import Game, Rating, UserGame
 from utils.errors import GameNotFoundError, NotInLibraryError
 
 logger = logging.getLogger("bigcousin.rating_service")
@@ -14,17 +14,25 @@ async def set_rating(session: AsyncSession, discord_id: int, game_id: int, score
     if not game:
         raise GameNotFoundError(f"Jogo {game_id} não encontrado no catálogo")
 
+    in_library = await session.execute(
+        select(UserGame).where(UserGame.user_id == discord_id, UserGame.game_id == game_id)
+    )
+    if not in_library.scalar_one_or_none():
+        raise NotInLibraryError("Adicione o jogo à sua biblioteca primeiro com /addgame")
+
     existing_rating = await session.execute(
         select(Rating).where(Rating.user_id == discord_id, Rating.game_id == game_id)
     )
     rating = existing_rating.scalar_one_or_none()
 
-    if rating is None:
-        raise NotInLibraryError("Adicione o jogo à sua biblioteca primeiro com /addgame")
+    if rating:
+        rating.score = score
+    else:
+        rating = Rating(user_id=discord_id, game_id=game_id, score=score)
+        session.add(rating)
 
-    rating.score = score
     await session.commit()
-    logger.info(f"Rating atualizado: {discord_id} -> {game.name}: {score}/10")
+    logger.info(f"Rating salvo: {discord_id} -> {game.name}: {score}/10")
     return rating
 
 
