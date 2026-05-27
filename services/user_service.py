@@ -56,7 +56,7 @@ async def get_user_stats(session: AsyncSession, discord_id: int) -> dict:
         for r in ratings_result.scalars().all():
             ratings[r.game_id] = r
 
-    total_games = len(game_ids_list)
+    total_games = len(user_game_ids)
     beaten_count = len(ratings)
     avg_rating = (
         round(sum(r.score for r in ratings.values()) / len(ratings), 1)
