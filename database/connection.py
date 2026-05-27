@@ -1,12 +1,16 @@
 import os
 import logging
+from pathlib import Path
 
 from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
                                     create_async_engine)
 
 logger = logging.getLogger("bigcousin.db")
 
-DB_PATH = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///data/bigcousin.db")
+DB_DIR = Path("data")
+DB_DIR.mkdir(exist_ok=True)
+
+DB_PATH = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{DB_DIR}/bigcousin.db")
 
 engine = create_async_engine(DB_PATH, echo=False)
 

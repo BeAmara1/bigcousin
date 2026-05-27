@@ -3,9 +3,6 @@ primary_region = 'gru'
 
 [build]
 
-[processes]
-  app = "python main.py"
-
 [[vm]]
   memory = '256mb'
   cpus = 1
