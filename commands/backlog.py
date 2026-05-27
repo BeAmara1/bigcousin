@@ -2,7 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from sqlalchemy import select
+
 from database.connection import async_session
+from database.models import Game
 from services.backlog_service import add_to_backlog, get_backlog, remove_from_backlog
 from services.user_service import get_or_create_user
 from utils.autocomplete import backlog_games, search_rawg_games
@@ -28,10 +31,9 @@ class BacklogCog(commands.GroupCog, name="backlog"):
             user = await get_or_create_user(session, interaction.user)
             try:
                 await add_to_backlog(session, user.discord_id, game_id)
-                from database.models import Game
-                from sqlalchemy import select
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
+                game_name = game.name
             except Exception as e:
                 await send_error(interaction, str(e))
                 return
@@ -39,7 +41,7 @@ class BacklogCog(commands.GroupCog, name="backlog"):
         await send_success(
             interaction,
             "📋 Adicionado ao Backlog",
-            f"**{game.name}** foi adicionado ao seu backlog!",
+            f"**{game_name}** foi adicionado ao seu backlog!",
         )
 
     @app_commands.command(name="remove", description="Remove um jogo do seu backlog")
@@ -53,10 +55,9 @@ class BacklogCog(commands.GroupCog, name="backlog"):
             user = await get_or_create_user(session, interaction.user)
             try:
                 await remove_from_backlog(session, user.discord_id, game_id)
-                from database.models import Game
-                from sqlalchemy import select
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
+                game_name = game.name
             except Exception as e:
                 await send_error(interaction, str(e))
                 return
@@ -64,7 +65,7 @@ class BacklogCog(commands.GroupCog, name="backlog"):
         await send_success(
             interaction,
             "📋 Removido do Backlog",
-            f"**{game.name}** foi removido do seu backlog.",
+            f"**{game_name}** foi removido do seu backlog.",
         )
 
     @app_commands.command(name="list", description="Lista todos os jogos do seu backlog")

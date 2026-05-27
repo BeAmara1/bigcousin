@@ -2,7 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from sqlalchemy import select
+
 from database.connection import async_session
+from database.models import Game
 from services.favorite_service import toggle_favorite
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
@@ -27,10 +30,9 @@ class FavoriteCog(commands.Cog):
             user = await get_or_create_user(session, interaction.user)
             try:
                 is_fav = await toggle_favorite(session, user.discord_id, game_id)
-                from database.models import Game
-                from sqlalchemy import select
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
+                game_name = game.name
             except Exception as e:
                 await send_error(interaction, str(e))
                 return
@@ -39,13 +41,13 @@ class FavoriteCog(commands.Cog):
             await send_success(
                 interaction,
                 "⭐ Favorito Adicionado",
-                f"**{game.name}** agora é um dos seus favoritos!",
+                f"**{game_name}** agora é um dos seus favoritos!",
             )
         else:
             await send_success(
                 interaction,
                 "⭐ Favorito Removido",
-                f"**{game.name}** foi removido dos seus favoritos.",
+                f"**{game_name}** foi removido dos seus favoritos.",
             )
 
 

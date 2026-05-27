@@ -1,9 +1,11 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+from sqlalchemy import select
 
 from database.connection import async_session
-from services.game_service import get_user_games, search_and_add_game
+from database.models import Game, Rating
+from services.game_service import get_or_create_game, get_user_games, search_and_add_game
 from services.rawg_api import rawg_client
 from services.user_service import get_or_create_user
 from utils.autocomplete import search_rawg_games
@@ -40,11 +42,8 @@ class GamesCog(commands.Cog):
 
         async with async_session() as session:
             user = await get_or_create_user(session, interaction.user)
-            from services.game_service import get_or_create_game
             game = await get_or_create_game(session, game_data)
 
-            from database.models import Rating
-            from sqlalchemy import select
             existing = await session.execute(
                 select(Rating).where(Rating.user_id == user.discord_id, Rating.game_id == game.id)
             )
@@ -56,7 +55,8 @@ class GamesCog(commands.Cog):
             session.add(rating)
             await session.commit()
 
-        embed = addgame_embed(interaction.user, game)
+            embed = addgame_embed(interaction.user, game)
+
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(

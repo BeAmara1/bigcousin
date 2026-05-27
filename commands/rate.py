@@ -2,7 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from sqlalchemy import select
+
 from database.connection import async_session
+from database.models import Game
 from services.rating_service import set_rating
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
@@ -33,15 +36,13 @@ class RateCog(commands.Cog):
             user = await get_or_create_user(session, interaction.user)
             try:
                 rating = await set_rating(session, user.discord_id, game_id, nota)
-                from database.models import Game
-                from sqlalchemy import select
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
+                embed = rating_embed(interaction.user, game, nota)
             except Exception as e:
                 await send_error(interaction, str(e))
                 return
 
-        embed = rating_embed(interaction.user, game, nota)
         await interaction.followup.send(embed=embed)
 
 
