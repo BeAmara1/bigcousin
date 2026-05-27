@@ -1,22 +1,12 @@
-# fly.toml app configuration file generated for bigcousin on 2026-05-25T11:55:21-03:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'bigcousin'
 primary_region = 'gru'
 
 [build]
 
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+[processes]
+  app = "python main.py"
 
 [[vm]]
-  memory = '1gb'
+  memory = '256mb'
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 256
