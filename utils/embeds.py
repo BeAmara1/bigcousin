@@ -24,7 +24,7 @@ def profile_embed(user_data):
         color=ACCENT_COLOR,
     )
 
-    embed.set_thumbnail(url=user.avatar_url or user.default_avatar.url)
+    embed.set_thumbnail(url=user.avatar_url)
 
     stats_text = (
         f"`🎮` Jogos: **{stats['total_games']}**\n"
@@ -61,12 +61,12 @@ def profile_embed(user_data):
 
 def game_list_embed(user, games_page, page, total_pages):
     embed = discord.Embed(
-        title=f"Biblioteca de {user.username}",
+        title=f"Biblioteca de {user.name}",
         description=f"**{len(games_page)} jogos** — Página {page + 1}/{total_pages}",
         color=ACCENT_COLOR,
     )
 
-    embed.set_thumbnail(url=user.avatar_url or user.default_avatar.url)
+    embed.set_thumbnail(url=user.display_avatar.url)
 
     game_lines = []
     for game, rating, in_backlog, is_fav in games_page:
@@ -90,7 +90,7 @@ def game_list_embed(user, games_page, page, total_pages):
 def rating_embed(user, game, score):
     embed = discord.Embed(
         title=f"⭐ Avaliação Registrada",
-        description=f"**{game.name}** recebeu **{score}/10** de {user.username}",
+        description=f"**{game.name}** recebeu **{score}/10** de {user.name}",
         color=SUCCESS_COLOR,
     )
 
@@ -102,7 +102,7 @@ def rating_embed(user, game, score):
 
 def review_embed(user, game, review_text):
     embed = discord.Embed(
-        title=f"💬 Review de {user.username}",
+        title=f"💬 Review de {user.name}",
         description=f"**{game.name}**",
         color=ACCENT_COLOR,
     )
@@ -112,7 +112,7 @@ def review_embed(user, game, review_text):
     if game.cover_url:
         embed.set_thumbnail(url=game.cover_url)
 
-    embed.set_footer(text=f"Review por {user.username}")
+    embed.set_footer(text=f"Review por {user.name}")
     return embed
 
 
@@ -138,7 +138,7 @@ def addgame_embed(user, game):
 
     embed = discord.Embed(
         title=f"🎮 Jogo Adicionado",
-        description=f"**{game.name}** foi adicionado à biblioteca de {user.username}",
+        description=f"**{game.name}** foi adicionado à biblioteca de {user.name}",
         color=SUCCESS_COLOR,
     )
 
