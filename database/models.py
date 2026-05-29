@@ -130,7 +130,7 @@ class AnalyticsEvent(Base):
     user_id = Column(BigInteger, nullable=False)
     event_type = Column(String(50), nullable=False)
     game_id = Column(Integer, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):

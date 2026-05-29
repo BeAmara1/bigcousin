@@ -16,7 +16,7 @@ async def log_event(event_type: str, user_id: int, guild_id: int | None = None, 
                 user_id=user_id,
                 event_type=event_type,
                 game_id=game_id,
-                metadata=metadata,
+                extra_data=metadata,
             )
             session.add(event)
             await session.commit()
