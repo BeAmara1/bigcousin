@@ -45,7 +45,7 @@ def profile_embed(user_data):
         embed.add_field(name="⭐ Favoritos", value=favs, inline=True)
 
     if stats['backlog_count'] > 0:
-        embed.add_field(name="📋 Backlog", value=f"**{stats['backlog_count']}** jogos", inline=True)
+        embed.add_field(name="📋 Quero Jogar", value=f"**{stats['backlog_count']}** jogos", inline=True)
 
     if stats['latest_review']:
         rv = stats['latest_review']
@@ -118,7 +118,7 @@ def review_embed(user, game, review_text):
 
 def backlog_embed(items, page, total_pages):
     embed = discord.Embed(
-        title="📋 Backlog",
+        title="📋 Quero Jogar",
         description="Jogos que você planeja jogar:",
         color=WARNING_COLOR,
     )
@@ -127,7 +127,7 @@ def backlog_embed(items, page, total_pages):
         lines = "\n".join(f"{i + 1}. **{g.name}**" for i, g in enumerate(items))
         embed.add_field(name=f"Página {page + 1}/{total_pages}", value=lines, inline=False)
     else:
-        embed.description = "Nenhum jogo no backlog."
+        embed.description = "Nenhum jogo na lista."
 
     return embed
 

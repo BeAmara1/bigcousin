@@ -16,11 +16,11 @@ from utils.paginator import PaginatorView
 ITEMS_PER_PAGE = 10
 
 
-class BacklogCog(commands.GroupCog, name="backlog"):
+class QueroJogarCog(commands.GroupCog, name="querojogar"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="add", description="Adiciona um jogo ao seu backlog")
+    @app_commands.command(name="add", description="Adiciona um jogo à sua lista de 'quero jogar'")
     @app_commands.autocomplete(jogo=search_rawg_games)
     async def add(self, interaction: discord.Interaction, jogo: str):
         await interaction.response.defer()
@@ -40,11 +40,11 @@ class BacklogCog(commands.GroupCog, name="backlog"):
 
         await send_success(
             interaction,
-            "📋 Adicionado ao Backlog",
-            f"**{game_name}** foi adicionado ao seu backlog!",
+            "📋 Quero Jogar",
+            f"**{game_name}** foi adicionado à sua lista de 'quero jogar'!",
         )
 
-    @app_commands.command(name="remove", description="Remove um jogo do seu backlog")
+    @app_commands.command(name="remove", description="Remove um jogo da sua lista de 'quero jogar'")
     @app_commands.autocomplete(jogo=backlog_games)
     async def remove(self, interaction: discord.Interaction, jogo: str):
         await interaction.response.defer()
@@ -64,11 +64,11 @@ class BacklogCog(commands.GroupCog, name="backlog"):
 
         await send_success(
             interaction,
-            "📋 Removido do Backlog",
-            f"**{game_name}** foi removido do seu backlog.",
+            "📋 Removido da Lista",
+            f"**{game_name}** foi removido da sua lista de 'quero jogar'.",
         )
 
-    @app_commands.command(name="list", description="Lista todos os jogos do seu backlog")
+    @app_commands.command(name="list", description="Lista todos os jogos da sua lista de 'quero jogar'")
     async def list(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
@@ -77,7 +77,7 @@ class BacklogCog(commands.GroupCog, name="backlog"):
             games = await get_backlog(session, user.discord_id)
 
         if not games:
-            await send_error(interaction, "Seu backlog está vazio! Use **/backlog add** para adicionar jogos.")
+            await send_error(interaction, "Sua lista de 'quero jogar' está vazia! Use **/querojogar add** para adicionar jogos.")
             return
 
         async def render_page(page_items, page, total_pages):
@@ -88,4 +88,4 @@ class BacklogCog(commands.GroupCog, name="backlog"):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(BacklogCog(bot))
+    await bot.add_cog(QueroJogarCog(bot))
