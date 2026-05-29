@@ -48,4 +48,4 @@ class PaginatorView(discord.ui.View):
     async def start(self, interaction: discord.Interaction):
         page_items = self._get_page_items()
         embed = await self.render_page(page_items, self.current_page, self.max_page + 1)
-        await interaction.response.send_message(embed=embed, view=self)
+        await interaction.followup.send(embed=embed, view=self)

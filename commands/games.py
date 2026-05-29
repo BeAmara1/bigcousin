@@ -8,7 +8,7 @@ from services.rawg_api import rawg_client
 from services.user_service import get_or_create_user
 from utils.autocomplete import search_rawg_games
 from utils.embeds import addgame_embed, game_list_embed
-from utils.errors import AlreadyInLibraryError, send_error, send_success
+from utils.errors import AlreadyInLibraryError, send_error
 from utils.paginator import PaginatorView
 
 ITEMS_PER_PAGE = 5

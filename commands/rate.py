@@ -10,7 +10,7 @@ from services.rating_service import set_rating
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
 from utils.embeds import rating_embed
-from utils.errors import send_error, send_success
+from utils.errors import send_error
 
 
 class RateCog(commands.Cog):

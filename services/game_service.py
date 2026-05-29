@@ -4,9 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Backlog, Favorite, Game, Rating, User, UserGame
-from services.rawg_api import rawg_client
-from utils.errors import AlreadyInLibraryError, GameNotFoundError
+from database.models import Backlog, Favorite, Game, Rating, Review, User, UserGame
+from utils.errors import AlreadyInLibraryError, GameNotFoundError, NotInLibraryError
 
 logger = logging.getLogger("bigcousin.game_service")
 
@@ -43,17 +42,6 @@ async def add_to_library(session: AsyncSession, discord_id: int, game_id: int) -
     session.add(user_game)
     await session.commit()
     return user_game
-
-
-async def search_and_add_game(session: AsyncSession, discord_id: int, query: str) -> Game:
-    results = await rawg_client.search_and_parse(query)
-    if not results:
-        raise GameNotFoundError(f"Nenhum jogo encontrado para: {query}")
-
-    game_data = results[0]
-    game = await get_or_create_game(session, game_data)
-    await add_to_library(session, discord_id, game.id)
-    return game
 
 
 async def get_user_games(session: AsyncSession, discord_id: int):
@@ -114,3 +102,31 @@ async def get_user_games_with_details(session: AsyncSession, discord_id: int) ->
         select(Game).where(Game.id.in_(game_ids))
     )
     return list(result.scalars().all())
+
+
+async def remove_from_library(session: AsyncSession, discord_id: int, game_id: int) -> str:
+    game = await session.get(Game, game_id)
+    if not game:
+        raise GameNotFoundError(f"Jogo não encontrado no catálogo")
+
+    game_name = game.name
+
+    user_game = await session.execute(
+        select(UserGame).where(UserGame.user_id == discord_id, UserGame.game_id == game_id)
+    )
+    ug = user_game.scalar_one_or_none()
+    if not ug:
+        raise NotInLibraryError(f"**{game_name}** não está na sua biblioteca.")
+
+    for model_cls in (Rating, Review, Backlog, Favorite):
+        result = await session.execute(
+            select(model_cls).where(
+                model_cls.user_id == discord_id,
+                model_cls.game_id == game_id
+            )
+        )
+        for obj in result.scalars().all():
+            await session.delete(obj)
+
+    await session.commit()
+    return game_name
