@@ -50,6 +50,7 @@ class BigCousin(commands.Bot):
         await self.load_extension("commands.stats")
         await self.load_extension("commands.privacy")
         await self.load_extension("commands.delete_data")
+        await self.load_extension("commands.export_csv")
 
         await self.tree.sync()
         self.logger.info("Comandos sincronizados com o Discord")
