@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from database.connection import async_session
 from database.models import Game
+from services.analytics_service import log_event
 from services.rating_service import set_rating
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
@@ -39,6 +40,7 @@ class RateCog(commands.Cog):
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
                 embed = rating_embed(interaction.user, game, nota)
+                await log_event("rate", user.discord_id, interaction.guild_id, game_id, {"score": nota})
             except Exception as e:
                 await send_error(interaction, str(e))
                 return

@@ -5,7 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import Backlog, Favorite, Game, Rating, Review, User, UserGame
+from database.models import (AnalyticsEvent, Backlog, Favorite, Game, Rating,
+                             Review, User, UserGame)
 from services.game_service import get_user_games
 from utils.errors import GameNotFoundError
 
@@ -106,3 +107,13 @@ async def get_user_stats(session: AsyncSession, discord_id: int) -> dict:
         "favorites": favorites,
         "latest_review": latest_review,
     }
+
+
+async def delete_user_data(session: AsyncSession, discord_id: int):
+    for model_cls in (UserGame, Rating, Review, Backlog, Favorite, AnalyticsEvent):
+        result = await session.execute(
+            select(model_cls).where(model_cls.user_id == discord_id)  # type: ignore
+        )
+        for obj in result.scalars().all():
+            await session.delete(obj)
+    await session.commit()

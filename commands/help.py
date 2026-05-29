@@ -2,6 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from services.analytics_service import log_event
+
 HELP_TEXT = (
     "**📋 Comandos disponíveis**\n\n"
     "**👤 Perfil**\n"
@@ -39,6 +41,9 @@ class HelpCog(commands.Cog):
             color=0x5865F2,
         )
         embed.set_footer(text="Use TAB para ver os parâmetros de cada comando")
+
+        await log_event("help", interaction.user.id, interaction.guild_id)
+
         await interaction.response.send_message(embed=embed, ephemeral=False)
 
 

@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from database.connection import async_session
 from database.models import Game
+from services.analytics_service import log_event
 from services.backlog_service import add_to_backlog, get_backlog, remove_from_backlog
 from services.user_service import get_or_create_user
 from utils.autocomplete import backlog_games, search_rawg_games
@@ -34,6 +35,7 @@ class QueroJogarCog(commands.GroupCog, name="querojogar"):
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
                 game_name = game.name
+                await log_event("backlog_add", user.discord_id, interaction.guild_id, game_id)
             except Exception as e:
                 await send_error(interaction, str(e))
                 return
@@ -58,6 +60,7 @@ class QueroJogarCog(commands.GroupCog, name="querojogar"):
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
                 game_name = game.name
+                await log_event("backlog_remove", user.discord_id, interaction.guild_id, game_id)
             except Exception as e:
                 await send_error(interaction, str(e))
                 return

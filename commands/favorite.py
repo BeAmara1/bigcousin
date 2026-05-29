@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from database.connection import async_session
 from database.models import Game
+from services.analytics_service import log_event
 from services.favorite_service import toggle_favorite
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
@@ -33,6 +34,7 @@ class FavoriteCog(commands.Cog):
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
                 game_name = game.name
+                await log_event("favorite", user.discord_id, interaction.guild_id, game_id, {"added": is_fav})
             except Exception as e:
                 await send_error(interaction, str(e))
                 return

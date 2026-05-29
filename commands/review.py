@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from database.connection import async_session
 from database.models import Game
+from services.analytics_service import log_event
 from services.review_service import set_review
 from services.user_service import get_or_create_user
 from utils.autocomplete import user_library_games
@@ -39,6 +40,7 @@ class ReviewCog(commands.Cog):
                 game_result = await session.execute(select(Game).where(Game.id == game_id))
                 game = game_result.scalar_one()
                 embed = review_embed(interaction.user, game, texto)
+                await log_event("review", user.discord_id, interaction.guild_id, game_id, {"text_length": len(texto)})
             except Exception as e:
                 await send_error(interaction, str(e))
                 return

@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from database.connection import async_session
+from services.analytics_service import log_event
 from services.game_service import (add_to_library, get_or_create_game,
                                    get_user_games)
 from services.rawg_api import rawg_client
@@ -48,6 +49,8 @@ class GamesCog(commands.Cog):
                 await send_error(interaction, str(e))
                 return
 
+            await log_event("addgame", user.discord_id, interaction.guild_id, game.id)
+
             embed = addgame_embed(interaction.user, game)
 
         await interaction.followup.send(embed=embed)
@@ -66,6 +69,8 @@ class GamesCog(commands.Cog):
         if not games:
             await send_error(interaction, "Sua biblioteca está vazia! Use **/addgame** para adicionar jogos.")
             return
+
+        await log_event("games", interaction.user.id, interaction.guild_id)
 
         async def render_page(page_items, page, total_pages):
             return game_list_embed(interaction.user, page_items, page, total_pages)

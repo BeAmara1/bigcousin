@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from database.connection import async_session
+from services.analytics_service import log_event
 from services.user_service import get_or_create_user, get_user_stats
 from utils.embeds import profile_embed
 
@@ -28,6 +29,9 @@ class ProfileCog(commands.Cog):
             "user": user,
             "stats": stats,
         })
+
+        await log_event("profile", interaction.user.id, interaction.guild_id)
+
         await interaction.followup.send(embed=embed)
 
 

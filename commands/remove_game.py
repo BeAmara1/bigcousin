@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from database.connection import async_session
+from services.analytics_service import log_event
 from services.game_service import remove_from_library
 from utils.autocomplete import user_library_games
 from utils.errors import send_error, send_success
@@ -25,6 +26,7 @@ class RemoveGameCog(commands.Cog):
         async with async_session() as session:
             try:
                 game_name = await remove_from_library(session, interaction.user.id, game_id)
+                await log_event("remover", interaction.user.id, interaction.guild_id, game_id)
             except Exception as e:
                 await send_error(interaction, str(e))
                 return

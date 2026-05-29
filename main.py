@@ -47,6 +47,9 @@ class BigCousin(commands.Bot):
         await self.load_extension("commands.favorite")
         await self.load_extension("commands.help")
         await self.load_extension("commands.remove_game")
+        await self.load_extension("commands.stats")
+        await self.load_extension("commands.privacy")
+        await self.load_extension("commands.delete_data")
 
         await self.tree.sync()
         self.logger.info("Comandos sincronizados com o Discord")

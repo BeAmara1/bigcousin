@@ -122,6 +122,21 @@ class Favorite(Base):
         return f"<Favorite {self.user_id} -> {self.game_id}>"
 
 
+class AnalyticsEvent(Base):
+    __tablename__ = "analytics_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    guild_id = Column(BigInteger, nullable=True)
+    user_id = Column(BigInteger, nullable=False)
+    event_type = Column(String(50), nullable=False)
+    game_id = Column(Integer, nullable=True)
+    metadata = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<AnalyticsEvent {self.event_type} by {self.user_id}>"
+
+
 class UserGame(Base):
     __tablename__ = "user_games"
 
